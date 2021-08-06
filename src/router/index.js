@@ -1,6 +1,6 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
-import store from "@/store/index.js";
+// import store from "@/store/index.js";
 
 Vue.use(VueRouter); 
 const routes = [
@@ -8,23 +8,23 @@ const routes = [
     path: '/',
     name: 'login',
     component: () => import('../components/Login.vue'),
-    beforeEnter: (to, from, next) => {
-      if (store.getters["auth/isLoggedIn"]) {
-        next({ name: "Home" });
-      } else {
-        next();
-      }
-    }
+    // beforeEnter: (to, from, next) => {
+    //   if (store.getters["auth/isLoggedIn"]) {
+    //     next({ name: "Home" });
+    //   } else {
+    //     next();
+    //   }
+    // }
   },
   {
     path: '/signup',
     name: 'signup',
-    component: () => import('../components/Registration.vue')
+    component: () => import('../components/Signup.vue'),
   },
   {
     path: '/forgot-password',
     name: 'forgot-password',
-    component: () => import('../components/ForgotPassword.vue')
+    component: () => import('../components/ForgotPassword.vue'),
   },
   {
     path: '/home',

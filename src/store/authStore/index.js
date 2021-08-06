@@ -70,7 +70,7 @@ export default {
         })
         .catch((error) => {
           context.commit("LOGOUT");
-          error.read().then((data, done) => {
+          error.read().then((data) => {
             throw Error(data);
           });
         });
