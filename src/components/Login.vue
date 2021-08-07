@@ -2,6 +2,13 @@
   <v-container>
     <v-form>
       <h3>Sign In</h3>
+      <v-alert
+        v-if="errorMessage"
+        type="error"
+        dismissible
+      >
+        {{ errorMessage }} 
+      </v-alert>
 
       <v-container>
         <v-text-field
@@ -43,13 +50,17 @@
 </template>
 
 <script>
-import { mapActions } from "vuex";
+import { mapActions, mapGetters } from "vuex";
 export default {
   name: "Login",
+  computed: {
+    ...mapGetters({ loggedIn: "auth/isLoggedIn" })
+  },
   data() {
     return {
       email: "",
       password: "",
+      errorMessage: ""
     };
   },
   methods: {
@@ -60,7 +71,8 @@ export default {
           this.$router.push({ name: "home" });
         })
         .catch(error => {
-          this.error = error;
+          console.log(error)
+          this.errorMessage = "Cannot login user. please try again.";
         });
     },
   }

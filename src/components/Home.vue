@@ -1,5 +1,5 @@
 <template>
-<p>hello {{user.name}}</p>
+<p>hello {{user.title}} {{user.name}}, how are you?</p>
 </template>
 
 <script>

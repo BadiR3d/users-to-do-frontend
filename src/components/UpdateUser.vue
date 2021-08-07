@@ -4,7 +4,7 @@
       <h3>Update Profile</h3>
       <v-container>
         <v-text-field
-          v-model="name"
+          v-model="user.name"
           type="text"
           placeholder="Name"
           outlined
@@ -13,7 +13,7 @@
           dense
         />
         <v-text-field
-          v-model="surname"
+          v-model="user.surname"
           type="text"
           placeholder="Surname"
           outlined
@@ -22,7 +22,7 @@
           dense
         />
         <v-text-field
-          v-model="title"
+          v-model="user.title"
           type="text"
           placeholder="Title"
           outlined
@@ -31,7 +31,7 @@
           dense
         />
         <v-text-field
-          v-model="birthday"
+          v-model="user.birthday"
           type="text"
           placeholder="Birthday"
           outlined
@@ -40,7 +40,16 @@
           dense
         />
         <v-text-field
-          v-model="email"
+          v-model="user.age"
+          type="number"
+          placeholder="Age"
+          outlined
+          single-line
+          clearable
+          dense
+        />
+        <v-text-field
+          v-model="user.email"
           type="email"
           class=""
           placeholder="Email"
@@ -50,7 +59,7 @@
           dense
         />
         <v-text-field
-          v-model="password"
+          v-model="currentPassword"
           type="password"
           class=""
           placeholder="Current Password"
@@ -60,7 +69,7 @@
           clearable
         />
         <v-text-field
-          v-model="confirmPassword"
+          v-model="newPassword"
           type="password"
           class=""
           placeholder="New Password"
@@ -81,29 +90,47 @@
         />
       </v-container>
 
-      <v-btn @click="deleteClicked" color="warning">Delete</v-btn>
-      <v-btn color="primary" class="pl-2">Update</v-btn>
+      <v-btn
+        @click="deleteClicked"
+        color="warning"
+      >
+      Delete
+      </v-btn>
+
+      <v-btn
+        color="primary"
+        class="pl-2"
+      >
+      Update
+      </v-btn>
     </v-form>
   </v-container>
 </template>
 
 <script>
+import { mapActions, mapGetters } from 'vuex'
 export default {
+  name: 'UpdateUser',
+  props: {
+  },
+  created() {},
+  computed: {    
+  ...mapGetters({ user: "auth/currentUser" }),
+  },
   data() {
     return {
-      name: "",
-      surname: "",
-      title: "",
-      birthday: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
+      currentPassword: "",
+      newPassword: "",
       confirmNewPassword: "",
     };
   },
   methods: {
+    ...mapActions({ deleteUser: "auth/deleteUser"}),
+    // ...mapActions({ getUser: "auth/getUserProfile"}),
     deleteClicked() {
-      this.$store.dispatch("users/deleteUser", { user: this.user });
+      this.deleteUser().then(() => {
+        this.$router.push({ name: "login"})
+      })
     }
   }
 };

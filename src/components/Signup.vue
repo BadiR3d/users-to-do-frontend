@@ -40,6 +40,15 @@
           dense
         />
         <v-text-field
+          v-model="age"
+          type="number"
+          placeholder="Age"
+          outlined
+          single-line
+          clearable
+          dense
+        />
+        <v-text-field
           v-model="email"
           type="email"
           class=""
@@ -97,6 +106,7 @@ export default {
       surname: "",
       title: "",
       birthday: "",
+      age: 12,
       email: "",
       password: "",
       confirmPassword: "",
@@ -112,7 +122,16 @@ export default {
   methods: {
     ...mapActions({ signup: "auth/signup" }),
     signupClicked() {
-      this.signup({ email: this.email, password: this.password })
+      let user = {}
+      user.name = this.name
+      user.surname = this.surname
+      user.title = this.title
+      user.birthday = this.birthday
+      user.age = this.age
+      user.email = this.email
+      user.password = this.password
+      console.log("signupClicked user: ", user)
+      this.signup(user)
         .then(() => {
           this.$router.push({ name: "login" });
         })
@@ -120,20 +139,6 @@ export default {
           this.error = error;
         });
     },
-    // signup() {
-    //   const userdata = {}
-    //   userdata.name = this.name
-    //   userdata.surname = this.surname
-    //   userdata.email = this.email
-    //   userdata.title = this.title
-    //   userdata.birthday = this.birthday
-    //   userdata.password = this.password
-    //   this.$store.dispatch("auth/addUser", {
-    //     user: userdata
-    //   })
-    //   console.log('yea yea')
-    //   this.$router.push({ name: "login"})
-    // }
   }
 };
 </script>

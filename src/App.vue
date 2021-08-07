@@ -31,15 +31,37 @@
         href="#"
         target="_blank"
         text
+        v-if="user.isLoggedIn"
+        @click.prevent="userProfileClicked()"
       >
-        <span class="mr-2">About Ndyebo Badi</span>
+        <span class="mr-2">User Profile</span>
+        <v-icon>mdi-account-details</v-icon>
+      </v-btn>
+
+      <v-btn
+        href="#"
+        target="_blank"
+        text
+        v-if="user.isLoggedIn"
+        @click.prevent="getUsersClicked()"
+      >
+        <span class="mr-2">Users</span>
+        <v-icon>mdi-account-group</v-icon>
+      </v-btn>
+
+      <v-btn
+        href="#"
+        target="_blank"
+        text
+      >
+        <span class="mr-2">About</span>
         <v-icon>mdi-open-in-new</v-icon>
       </v-btn>
       <v-btn
         href="#"
         target="_blank"
         text
-        v-if="loggedIn"
+        v-if="user.isLoggedIn"
         @click.prevent="logoutClicked()"
       >
         <span class="mr-2">Logout</span>
@@ -54,25 +76,27 @@
 </template>
 
 <script>
-import { mapActions } from "vuex";
-import { mapGetters } from "vuex";
+import { mapActions, mapGetters } from "vuex";
 export default {
   name: 'App',
-  computed: {
-    ...mapGetters({ loggedIn: "auth/isLoggedIn" })
+  computed: {    
+    ...mapGetters({ loggedIn: "auth/isLoggedIn", user: "auth/currentUser" }),
   },
   data: () => ({
-    appLogo: '',
-    appNameLogo: '',
   }),
+  watch: {},
   methods: {
-    ...mapActions({
-      logout: "auth/logout"
-    }),
+    ...mapActions({ logout: "auth/logout" }),
     logoutClicked() {
       this.logout().then(() => {
         this.$router.push({ name: "login"})
       })
+    },
+    userProfileClicked() {
+      this.$router.push({ name: "update-profile" })
+    },
+    getUsersClicked() {
+      this.$router.push({ name: "view-users" })
     }
   }
 };

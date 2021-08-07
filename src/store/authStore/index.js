@@ -1,50 +1,49 @@
+import axios from "axios";
+
 export default {
   namespaced: true,
   state: {
-    user: {
-      id: 1,
-      name: "idalmasso",
-      description: "Here is the description",
-      //here there will be the logic for auth and so on...
-      loggedIn: false,
-    },
+    user: {},
     users: [],
   },
   mutations: {
-    LOGIN(state, { email, token }) {
-      state.user.loggedIn = true;
-      state.user.email = email;
-      state.user.token = token;
+    LOGIN(state, { user, token}) {
+      console.log('LOGIN before: ', user)
+      state.user = user
+      state.user.isLoggedIn = true
+      state.user.token = token
+      console.log('LOGIN after: ', user)
     },
     LOGOUT(state) {
-      state.user.loggedIn = false;
-      state.user.email = "";
-      state.user.token = "";
+      state.user = {};
     },
     ADD_USER(state, user) {
       state.users.push(user);
     },
+    SET_USER(state, user) {
+      state.user = user;
+    },
     SET_ALL_USERS(state, users) {
-      state.users = users;
+      console.log('SET_ALL_USERS; ', users)
+      state.users = state.users.concat(users.data);
     },
   },
   actions: {
     async login(context, { email, password }) {
-      return fetch("http://localhost:3000/api/auth/login", {
-        method: "POST",
-        body: JSON.stringify({
-          email: email,
-          password: password,
-        }),
-      })
+      axios.post("login", { email, password })
         .then((response) => {
-          if (!response.ok) {
+          if (response.status !== 200) {
             throw new Error("Cannot login!");
           }
-          return response.json();
+          return response;
         })
         .then((data) => {
-          context.commit("LOGIN", { email: email, token: data.token });
+          if (data.status === 200) {
+            context.commit("LOGIN", { user: data.data.user, token: data.data.token});
+            context.dispatch('getAllUsers')
+          } else {
+            context.commit("LOGOUT")
+          }
         })
         .catch((error) => {
           context.commit("LOGOUT");
@@ -52,13 +51,25 @@ export default {
         });
     },
     async logout(context) {
-      context.commit("LOGOUT");
+      await axios.post("logout")
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Cannot logout!");
+          }
+          return response.json();
+        })
+        .then(() => {
+          context.commit("LOGOUT");
+        })
+        .catch((error) => {
+          context.commit("LOGOUT");
+          error.read().then((data) => {
+            throw Error(data);
+          });
+        });
     },
     async signup(context, user ) {
-      return fetch("http://localhost:3000/api/auth/create-user", {
-        method: "POST",
-        body: JSON.stringify(user),
-      })
+      await axios.post("signup", user)
         .then((response) => {
           if (!response.ok) {
             throw new Error("Cannot signup!");
@@ -66,7 +77,7 @@ export default {
           return response.json();
         })
         .then((data) => {
-          context.commit("LOGIN", { email: user.email, token: data.token });
+          context.commit("LOGIN", data.data.user);
         })
         .catch((error) => {
           context.commit("LOGOUT");
@@ -76,12 +87,10 @@ export default {
         });
     },
     async deleteUser(context, { user }) {
-      fetch("http://localhost:3000/api/users/" + user.id, {
-        method: "DELETE",
-      })
+      await axios.delete("users/" + user.id)
         .then((response) => {
-          if (response.ok) {
             console.log(response);
+            if (response.ok) {
             context.commit("DELETE_USER", user.id);
             return;
           }
@@ -91,11 +100,38 @@ export default {
           console.log(error);
         });
     },
+    async getUserProfile(context) {
+      await axios.get("users/me",{
+        headers: {
+          'Authorization': `Bearer ${context.getters.getToken}`
+        }
+      })
+      .then((response) => {
+        if (response.ok) {
+          return response.json();
+        } else {
+          throw Error(response.body);
+        }
+      })
+      .then((data) => {
+        console.log(data);
+        context.commit("SET_USER", data);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+    },
     async getAllUsers(context) {
-      fetch("http://localhost:3000/api/users")
+      console.log('getAllUsers tokelele: ', context.getters.getToken)
+      await axios.get("users", {
+        headers: {
+          'Authorization': `Bearer ${context.getters.getToken}`
+        }
+      })
         .then((response) => {
-          if (response.ok) {
-            return response.json();
+          console.log(response)
+          if (response.status === 200) {
+            return response;
           } else {
             throw Error(response.body);
           }
@@ -109,7 +145,7 @@ export default {
         });
     },
     async addUser(context, { email }) {
-      return fetch("http://localhost:3000/api/users/" + email, {
+      return fetch("users/" + email, {
         headers: {
           Authorization: context.rootGetters["auth/getTokenHeader"]
         }
@@ -135,5 +171,11 @@ export default {
       if (!state.user) return false;
       return state.user.loggedIn;
     },
+    allUsers(state) {
+      return state.users
+    },
+    getToken(state) {
+      return state.user.token
+    }
   },
 };
