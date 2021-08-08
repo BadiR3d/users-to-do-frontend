@@ -2,6 +2,15 @@
   <v-container>
     <v-form>
       <h3>Sign Up</h3>
+
+      <v-alert
+        v-if="errorMessage"
+        type="error"
+        dismissible
+      >
+        {{ errorMessage }} 
+      </v-alert>
+
       <v-container>
         <v-text-field
           v-model="name"
@@ -33,7 +42,7 @@
         <v-text-field
           v-model="birthday"
           type="text"
-          placeholder="Birthday"
+          placeholder="Birthday (01 January 2001)"
           outlined
           single-line
           clearable
@@ -98,6 +107,7 @@
 
 <script>
 import { mapActions } from "vuex";
+import Moment from 'moment'
 export default {
   name: 'Signup',
   data() {
@@ -110,6 +120,7 @@ export default {
       email: "",
       password: "",
       confirmPassword: "",
+      errorMessage: "",
     };
   },
   computed: {
@@ -126,17 +137,20 @@ export default {
       user.name = this.name
       user.surname = this.surname
       user.title = this.title
-      user.birthday = this.birthday
+      user.birthday = new Moment(this.birthday, "DD MMMM YYYY").local().valueOf()
       user.age = this.age
       user.email = this.email
       user.password = this.password
-      console.log("signupClicked user: ", user)
+      console.log("signupClicked user: ", user.birthday)
       this.signup(user)
-        .then(() => {
-          this.$router.push({ name: "login" });
+        .then((response) => {
+          console.log('signup res: ', response)
+          this.$router.push({ name: "home" });
         })
         .catch(error => {
-          this.error = error;
+          // console.log(error)
+          this.error = error
+          this.errorMessage = "Cannot signup user. please try again.";
         });
     },
   }
