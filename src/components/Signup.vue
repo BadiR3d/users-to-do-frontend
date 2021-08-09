@@ -143,7 +143,7 @@ export default {
       } else return false
     },
     fromUserBirthday() {
-      return new Moment(this.birthday).format("DD MMMM YYYY");
+      return this.birthday ? new Moment(this.birthday).format("DD MMMM YYYY") : "";
     },
   },
   methods: {

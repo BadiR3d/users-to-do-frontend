@@ -2,71 +2,90 @@
   <v-container>
     <v-form>
       <h3>Update Profile</h3>
+
+      <v-alert
+        v-if="errorMessage"
+        type="error"
+        dismissible
+      >
+        {{ errorMessage }} 
+      </v-alert>
+
+      <v-alert
+        v-if="successMessage"
+        type="success"
+        dismissible
+      >
+        {{ successMessage }} 
+      </v-alert>
+
       <v-container>
         <v-text-field
-          v-model="user.name"
+          v-model="name"
           type="text"
-          placeholder="Name"
+          :placeholder="currUser.name"
           outlined
           single-line
           clearable
           dense
         />
         <v-text-field
-          v-model="user.surname"
+          v-model="surname"
           type="text"
-          placeholder="Surname"
+          :placeholder="currUser.surname"
           outlined
           single-line
           clearable
           dense
         />
         <v-text-field
-          v-model="user.title"
+          v-model="title"
           type="text"
-          placeholder="Title"
+          :placeholder="currUser.title"
           outlined
           single-line
           clearable
           dense
         />
-        <v-text-field
-          v-model="user.birthday"
-          type="text"
-          placeholder="Birthday"
+        <v-menu
+          v-model="dateMenu"
+          :close-on-content-click="false"
+          :nudge-right="40"
+          transition="scale-transition"
+          offset-y
           outlined
           single-line
           clearable
           dense
-        />
+        >
+          <template v-slot:activator="{ on }">
+            <v-text-field
+              label="Birthday"
+              prepend-icon="mdi-calendar"
+              readonly
+              :value="fromUserBirthday"
+              outlined
+              single-line
+              dense
+              v-on="on"
+            ></v-text-field>
+          </template>
+          <v-date-picker
+            locale="en-in"
+            v-model="birthday"
+            no-title
+            @input="dateMenu = false"
+          ></v-date-picker>
+        </v-menu>
         <v-text-field
-          v-model="user.age"
-          type="number"
-          placeholder="Age"
-          outlined
-          single-line
-          clearable
-          dense
-        />
-        <v-text-field
-          v-model="user.email"
+          v-model="email"
           type="email"
           class=""
-          placeholder="Email"
+          :placeholder="currUser.email"
           outlined
           single-line
           clearable
           dense
-        />
-        <v-text-field
-          v-model="currentPassword"
-          type="password"
-          class=""
-          placeholder="Current Password"
-          outlined
-          single-line
-          dense
-          clearable
         />
         <v-text-field
           v-model="newPassword"
@@ -98,8 +117,10 @@
       </v-btn>
 
       <v-btn
+        :disabled="!isValid"
         color="primary"
         class="pl-2"
+        @click="updateClicked"
       >
       Update
       </v-btn>
@@ -109,28 +130,72 @@
 
 <script>
 import { mapActions, mapGetters } from 'vuex'
+import Moment from 'moment'
 export default {
   name: 'UpdateUser',
   props: {
   },
   created() {},
   computed: {    
-  ...mapGetters({ user: "auth/currentUser" }),
+    ...mapGetters({ currUser: "auth/currentUser" }),
+    fromUserBirthday() {
+      if (!this.birthday) {
+        return new Moment(this.currUser.birthday).format("DD MMMM YYYY");
+      } else {
+        return new Moment(this.birthday).format("DD MMMM YYYY");
+      }
+    },
+    isValid() {
+      if (this.newPassword && this.newPassword !== this.confirmNewPassword) {
+        return false
+      } else return true
+    }
   },
   data() {
     return {
-      currentPassword: "",
+      name: "",
+      surname: "",
+      title: "",
+      birthday: "",
+      email: "",
       newPassword: "",
+      errorMessage: "",
       confirmNewPassword: "",
+      dateMenu: false,
+      successMessage: "",
     };
   },
   methods: {
     ...mapActions({ deleteUser: "auth/deleteUser"}),
-    // ...mapActions({ getUser: "auth/getUserProfile"}),
+    ...mapActions({ updateUser: "auth/updateUser"}),
     deleteClicked() {
       this.deleteUser().then(() => {
         this.$router.push({ name: "login"})
       })
+      .catch(error => {
+        console.log(error)
+        this.errorMessage = "Cannot delete user. please try again.";
+      });
+    },
+    updateClicked() {
+      let user = {}
+      user.name = this.name ? this.name : this.currUser.name
+      user.surname = this.surname ? this.surname : this.currUser.surname
+      user.title = this.title ? this.title : this.currUser.title
+      user.birthday = this.birthday ? this.birthday : this.currUser.birthday
+      user.email = this.email ? this.email : this.currUser.email
+      if (this.newPassword) user.password = this.newPassword
+      console.log('updateClicked: ',user)
+      this.updateUser(user)
+        .then((response) => {
+          console.log('updateUser res: ', response)
+          this.successMessage = "update successful"
+          // this.$router.push({ name: "home" });
+        })
+        .catch(error => {
+          console.log(error)
+          this.errorMessage = "Cannot update user. please try again.";
+        });
     }
   }
 };
