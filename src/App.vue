@@ -32,6 +32,17 @@
         target="_blank"
         text
         v-if="user.isLoggedIn"
+        @click.prevent="homeClicked()"
+      >
+        <span class="mr-2">Home</span>
+        <v-icon>mdi-home</v-icon>
+      </v-btn>
+
+      <v-btn
+        href="#"
+        target="_blank"
+        text
+        v-if="user.isLoggedIn"
         @click.prevent="userProfileClicked()"
       >
         <span class="mr-2">User Profile</span>
@@ -79,11 +90,17 @@
 import { mapActions, mapGetters } from "vuex";
 export default {
   name: 'App',
-  computed: {    
-    ...mapGetters({ loggedIn: "auth/isLoggedIn", user: "auth/currentUser" }),
+  created() {
+    console.log('loggedIn: ', this.loggedIn)
+    if (!this.loggedIn) {
+      this.logoutClicked()
+    }
   },
-  data: () => ({
-  }),
+  computed: {    
+    ...mapGetters({ user: "auth/currentUser" }),
+    ...mapGetters({ loggedIn: "auth/isLoggedIn" }),
+  },
+  data: () => ({}),
   watch: {},
   methods: {
     ...mapActions({ logout: "auth/logout" }),
@@ -96,6 +113,9 @@ export default {
     },
     getUsersClicked() {
       this.$router.push({ name: "view-users" })
+    },
+    homeClicked() {
+      this.$router.push({ name: "home"})
     }
   }
 };
