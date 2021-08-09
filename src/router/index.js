@@ -1,6 +1,6 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
-// import store from "@/store/index.js";
+import store from "@/store/index.js";
 
 Vue.use(VueRouter); 
 const routes = [
@@ -8,13 +8,13 @@ const routes = [
     path: '/',
     name: 'login',
     component: () => import('../components/Login.vue'),
-    // beforeEnter: (to, from, next) => {
-    //   if (store.getters["auth/isLoggedIn"]) {
-    //     next({ name: "Home" });
-    //   } else {
-    //     next();
-    //   }
-    // }
+    beforeEnter: (to, from, next) => {
+      if (store.getters["auth/isLoggedIn"]) {
+        next({ name: "Home" });
+      } else {
+        next();
+      }
+    }
   },
   {
     path: '/signup',
@@ -47,6 +47,16 @@ const routes = [
     path: "/about",
     name: "About",
     component: () => import("../components/About.vue")
+  },
+  {
+    path: "/create-task",
+    name: "create-task",
+    component: () => import("../components/tasks/CreateTask.vue")
+  },
+  {
+    path: "/task-details",
+    name: "task-details",
+    component: () => import("../components/tasks/TaskDetails.vue")
   }]; 
 const router = new VueRouter({
   mode: "history",

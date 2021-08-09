@@ -5,6 +5,7 @@ export default {
   state: {
     user: {},
     users: [],
+    tasks: [],
   },
   mutations: {
     LOGIN(state, { user, token}) {
@@ -16,151 +17,239 @@ export default {
     },
     LOGOUT(state) {
       state.user = {};
-    },
-    ADD_USER(state, user) {
-      state.users.push(user);
+      state.users = []
+      state.tasks = []
     },
     SET_USER(state, user) {
+      const password = state.user.password
       state.user = user;
+      if (!user.password) {
+        state.user.password = password
+      }
     },
     SET_ALL_USERS(state, users) {
       console.log('SET_ALL_USERS; ', users)
       state.users = state.users.concat(users.data);
     },
+    ADD_TASK(state, task) {
+      console.log('ADD_TASK; ', task)
+      state.tasks.push(task);
+    },
+    SET_USER_TASK(state, task) {
+      console.log('SET_USER_TASK; ', task)
+      state.user.task = task;
+    },
+    SET_ALL_TASKS(state, tasks) {
+      console.log('SET_ALL_TASKS; ', tasks)
+      state.tasks = state.tasks.concat(tasks.data);
+    },
+    REMOVE_USER_TASK(state, task) {
+      const index = state.tasks.findIndex(object => object._id === task._id);
+      state.tasks = [
+        ...state.tasks.slice(0, index),
+        ...state.tasks.slice(index + 1)
+      ]
+    },
+    REMOVE_USER_TASKS(state) {
+      state.user.task = {};
+    }
   },
   actions: {
     async login(context, { email, password }) {
-      axios.post("login", { email, password })
-        .then((response) => {
-          if (response.status !== 200) {
-            throw new Error("Cannot login!");
-          }
-          return response;
-        })
-        .then((data) => {
-          if (data.status === 200) {
-            context.commit("LOGIN", { user: data.data.user, token: data.data.token});
-            context.dispatch('getAllUsers')
-          } else {
-            context.commit("LOGOUT")
-          }
-        })
-        .catch((error) => {
-          context.commit("LOGOUT");
-          throw error;
-        });
+      return new Promise((resolve, reject) => {
+        axios.post("login", { email, password })
+         .then(function ({data}) {
+          console.log(data)
+          context.commit("LOGIN", { user: data.user, token: data.token});
+          context.dispatch('getAllUsers')
+          context.dispatch('getAllTasks')
+          resolve(data);
+         })
+         .catch(function (error) {
+          reject(error);
+         });
+       });
     },
     async logout(context) {
-      await axios.post("logout")
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error("Cannot logout!");
-          }
-          return response.json();
-        })
+      await axios.post("logout", {
+        headers: {
+          'Authorization': `Bearer ${context.getters.getToken}`
+        }
+      })
         .then(() => {
           context.commit("LOGOUT");
         })
         .catch((error) => {
           context.commit("LOGOUT");
-          error.read().then((data) => {
-            throw Error(data);
-          });
+          console.log(error)
         });
     },
-    async signup(context, user ) {
-      await axios.post("signup", user)
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error("Cannot signup!");
-          }
-          return response.json();
+    async signup(context, user) {
+      return new Promise((resolve, reject) => {
+        axios.post("signup", user)
+        .then(function ({data}) {
+          console.log(data)
+          context.commit("LOGIN", { user: data.user, token: data.token});
+          context.dispatch('getAllUsers')
+          resolve(data)
         })
-        .then((data) => {
-          context.commit("LOGIN", data.data.user);
-        })
-        .catch((error) => {
+        .catch(function (error) {
           context.commit("LOGOUT");
-          error.read().then((data) => {
-            throw Error(data);
-          });
+          reject(error);
         });
+      });
     },
-    async deleteUser(context, { user }) {
-      await axios.delete("users/" + user.id)
-        .then((response) => {
-            console.log(response);
-            if (response.ok) {
-            context.commit("DELETE_USER", user.id);
-            return;
+    async deleteUser(context) {
+      return new Promise((resolve, reject) => {
+        axios.delete("users/me/delete", {
+          headers: {
+            'Authorization': `Bearer ${context.getters.getToken}`
           }
-          throw Error(response);
         })
-        .catch((error) => {
-          console.log(error);
+        .then(function ({data}) {
+          console.log(data);
+          context.commit("LOGOUT");
+          resolve(data)
+        })
+        .catch(function (error) {
+          context.commit("LOGOUT");
+          reject(error);
         });
+      });
     },
     async getUserProfile(context) {
-      await axios.get("users/me",{
-        headers: {
-          'Authorization': `Bearer ${context.getters.getToken}`
-        }
-      })
-      .then((response) => {
-        if (response.ok) {
-          return response.json();
-        } else {
-          throw Error(response.body);
-        }
-      })
-      .then((data) => {
-        console.log(data);
-        context.commit("SET_USER", data);
-      })
-      .catch((error) => {
-        console.log(error);
+      return new Promise((resolve, reject) => {
+        axios.get("users/me",{
+          headers: {
+            'Authorization': `Bearer ${context.getters.getToken}`
+          }
+        })
+        .then(function ({data}) {
+          console.log(data);
+          context.commit("SET_USER", { user: data.data.user });
+          resolve(data)
+        })
+        .catch(function (error) {
+          console.log(error);
+          reject(error);
+        });
       });
     },
     async getAllUsers(context) {
-      console.log('getAllUsers tokelele: ', context.getters.getToken)
-      await axios.get("users", {
-        headers: {
-          'Authorization': `Bearer ${context.getters.getToken}`
-        }
-      })
-        .then((response) => {
-          console.log(response)
-          if (response.status === 200) {
-            return response;
-          } else {
-            throw Error(response.body);
+      return new Promise((resolve, reject) => {
+        axios.get("users", {
+          headers: {
+            'Authorization': `Bearer ${context.getters.getToken}`
+          }
+        })
+        .then((data) => {
+          context.commit("SET_ALL_USERS", data);
+          resolve(data)
+        })
+        .catch((error) => {
+          console.log(error);
+          reject(error);
+        });
+      });
+    },
+    async updateUser(context, user) {
+      return new Promise((resolve, reject) => {
+        axios({
+          method: 'patch',
+          url: 'users/me/update',
+          data: user,
+          headers: {
+            'Authorization': `Bearer ${context.getters.getToken}`
+          },
+        })
+        .then(function ({data}) {
+          console.log(data)
+          context.commit("SET_USER", { user: data.user });
+          resolve(data);
+        })
+        .catch(function (error) {
+          reject(error);
+        });
+      });
+    },
+    async setTask(context, task) {
+      context.commit("SET_USER_TASK", task);
+    },
+    async getAllTasks(context) {
+      return new Promise((resolve, reject) => {
+        axios.get("tasks", {
+          headers: {
+            'Authorization': `Bearer ${context.getters.getToken}`
           }
         })
         .then((data) => {
           console.log(data);
-          context.commit("SET_ALL_USERS", data);
+          context.commit("SET_ALL_TASKS", data);
+          resolve(data)
         })
         .catch((error) => {
           console.log(error);
+          reject(error);
         });
+      });
     },
-    async addUser(context, { email }) {
-      return fetch("users/" + email, {
-        headers: {
-          Authorization: context.rootGetters["auth/getTokenHeader"]
-        }
-      })
-        .then(response => {
-          if (!response.ok) throw new Error("Cannot get user");
-          return response.json();
+    async createTask(context, task) {
+      return new Promise((resolve, reject) => {
+        axios({
+          method: 'post',
+          url: 'tasks/create-task',
+          data: task,
+          headers: {
+            'Authorization': `Bearer ${context.getters.getToken}`
+          },
         })
-        .then(data => {
-          context.commit("ADD_USER", data);
+        .then(function ({data}) {
+          console.log(data)
+          context.commit("ADD_TASK", data)
+          resolve(data);
         })
-        .catch(error => {
-          console.log(error);
-          throw error;
+        .catch(function (error) {
+          reject(error);
         });
+      });
+    },
+    async updateTask(context, task) {
+      console.log('id: ', context.getters.getTaskId)
+      return new Promise((resolve, reject) => {
+        axios({
+          method: 'patch',
+          url: `tasks/update-task/${context.getters.getTaskId}`,
+          data: task,
+          headers: {
+            'Authorization': `Bearer ${context.getters.getToken}`
+          }
+        })
+        .then(function ({data}) {
+          console.log(data)
+          context.commit("SET_USER_TASK", data);
+          resolve(data);
+        })
+        .catch(function (error) {
+          reject(error);
+        });
+      });
+    },
+    async deleteTask(context) {
+      return new Promise((resolve, reject) => {
+        axios.delete(`tasks/${context.getters.getTaskId}`, {
+          headers: {
+            'Authorization': `Bearer ${context.getters.getToken}`
+          }
+        })
+        .then(function ({data}) {
+          console.log(data);
+          context.commit("REMOVE_USER_TASK", data)
+          resolve(data)
+        })
+        .catch(function (error) {
+          reject(error);
+        });
+      });
     }
   },
   getters: {
@@ -176,6 +265,15 @@ export default {
     },
     getToken(state) {
       return state.user.token
+    },
+    getTask(state) {
+      return state.user.task
+    },
+    getTaskId(state) {
+      return state.user.task._id
+    },
+    allTasks(state) {
+      return state.tasks
     }
   },
 };

@@ -9,7 +9,7 @@
         </v-list-item-icon>
 
         <v-list-item-content>
-          <h4>{{ user.name }} {{ user.surname }}</h4>
+          <h4>{{ user.name }} {{ user.surname }}, title: {{ user.title }}, date of birth {{ formatDate(user.birthday) }}</h4>
         </v-list-item-content>
       </v-list-item>
     </v-list>
@@ -17,6 +17,7 @@
 </template>
 <script>
 import { mapGetters } from "vuex";
+import Moment from 'moment'
 export default {
   name: "ViewUsers",
   created() {},
@@ -32,7 +33,11 @@ export default {
   data() {
     return {};
   },
-  methods: {},
+  methods: {
+    formatDate(date) {
+      return new Moment(date).format("DD MMMM YYYY")
+    }
+  },
 };
 </script>
 <style lang="sass"></style>
