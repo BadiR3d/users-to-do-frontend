@@ -88,9 +88,8 @@ export default {
   methods: {
     ...mapActions({ logout: "auth/logout" }),
     logoutClicked() {
-      this.logout().then(() => {
-        this.$router.push({ name: "login"})
-      })
+      this.logout()
+      this.$router.push({ name: "login"})
     },
     userProfileClicked() {
       this.$router.push({ name: "update-profile" })
