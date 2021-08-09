@@ -9,18 +9,19 @@ export default {
   },
   mutations: {
     LOGIN(state, { user, token}) {
-      console.log('LOGIN before: ', user)
+      console.log('LOGIN')
       state.user = user
       state.user.isLoggedIn = true
       state.user.token = token
-      console.log('LOGIN after: ', user)
     },
     LOGOUT(state) {
+      console.log('LOGOUT')
       state.user = {};
       state.users = []
       state.tasks = []
     },
     SET_USER(state, user) {
+      console.log('SET_USER: ', user)
       const password = state.user.password
       state.user = user;
       if (!user.password) {
@@ -28,22 +29,23 @@ export default {
       }
     },
     SET_ALL_USERS(state, users) {
-      console.log('SET_ALL_USERS; ', users)
+      console.log('SET_ALL_USERS: ', users)
       state.users = state.users.concat(users.data);
     },
     ADD_TASK(state, task) {
-      console.log('ADD_TASK; ', task)
+      console.log('ADD_TASK: ', task)
       state.tasks.push(task);
     },
     SET_USER_TASK(state, task) {
-      console.log('SET_USER_TASK; ', task)
+      console.log('SET_USER_TASK: ', task)
       state.user.task = task;
     },
     SET_ALL_TASKS(state, tasks) {
-      console.log('SET_ALL_TASKS; ', tasks)
+      console.log('SET_ALL_TASKS: ', tasks)
       state.tasks = state.tasks.concat(tasks.data);
     },
     REMOVE_USER_TASK(state, task) {
+      console.log('REMOVE_USER_TASK: ', task)
       const index = state.tasks.findIndex(object => object._id === task._id);
       state.tasks = [
         ...state.tasks.slice(0, index),
@@ -51,6 +53,7 @@ export default {
       ]
     },
     REMOVE_USER_TASKS(state) {
+      console.log('REMOVE_USER_TASKS')
       state.user.task = {};
     }
   },
@@ -107,12 +110,10 @@ export default {
           }
         })
         .then(function ({data}) {
-          console.log(data);
           context.commit("LOGOUT");
           resolve(data)
         })
         .catch(function (error) {
-          context.commit("LOGOUT");
           reject(error);
         });
       });
@@ -125,7 +126,6 @@ export default {
           }
         })
         .then(function ({data}) {
-          console.log(data);
           context.commit("SET_USER", { user: data.data.user });
           resolve(data)
         })
@@ -163,7 +163,6 @@ export default {
           },
         })
         .then(function ({data}) {
-          console.log(data)
           context.commit("SET_USER", { user: data.user });
           resolve(data);
         })
@@ -183,7 +182,6 @@ export default {
           }
         })
         .then((data) => {
-          console.log(data);
           context.commit("SET_ALL_TASKS", data);
           resolve(data)
         })
@@ -204,7 +202,6 @@ export default {
           },
         })
         .then(function ({data}) {
-          console.log(data)
           context.commit("ADD_TASK", data)
           resolve(data);
         })
@@ -225,7 +222,6 @@ export default {
           }
         })
         .then(function ({data}) {
-          console.log(data)
           context.commit("SET_USER_TASK", data);
           resolve(data);
         })
@@ -242,7 +238,6 @@ export default {
           }
         })
         .then(function ({data}) {
-          console.log(data);
           context.commit("REMOVE_USER_TASK", data)
           resolve(data)
         })
