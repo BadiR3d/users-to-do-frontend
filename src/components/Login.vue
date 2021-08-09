@@ -65,9 +65,10 @@ export default {
   },
   methods: {
     ...mapActions({ login: "auth/login"}),
-    loginClicked() {
+    async loginClicked() {
       this.login({ email: this.email, password: this.password })
-        .then(() => {
+        .then((response) => {
+          console.log("login res: ", response)
           this.$router.push({ name: "home" });
         })
         .catch(error => {
