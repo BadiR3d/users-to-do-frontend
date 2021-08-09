@@ -39,24 +39,37 @@
           clearable
           dense
         />
-        <v-text-field
-          v-model="birthday"
-          type="text"
-          placeholder="Birthday (01 January 2001)"
+        <v-menu
+          v-model="dateMenu"
+          :close-on-content-click="false"
+          :nudge-right="40"
+          transition="scale-transition"
+          offset-y
           outlined
           single-line
           clearable
           dense
-        />
-        <v-text-field
-          v-model="age"
-          type="number"
-          placeholder="Age"
-          outlined
-          single-line
-          clearable
-          dense
-        />
+        >
+          <template v-slot:activator="{ on }">
+            <v-text-field
+              label="Birthday"
+              prepend-icon="mdi-calendar"
+              readonly
+              :value="fromUserBirthday"
+              placeholder=""
+              outlined
+              single-line
+              dense
+              v-on="on"
+            ></v-text-field>
+          </template>
+          <v-date-picker
+            locale="en-in"
+            v-model="birthday"
+            no-title
+            @input="dateMenu = false"
+          ></v-date-picker>
+        </v-menu>
         <v-text-field
           v-model="email"
           type="email"
@@ -116,10 +129,10 @@ export default {
       surname: "",
       title: "",
       birthday: "",
-      age: 12,
       email: "",
       password: "",
       confirmPassword: "",
+      dateMenu: false,
       errorMessage: "",
     };
   },
@@ -129,6 +142,9 @@ export default {
         return this.password === this.confirmPassword
       } else return false
     },
+    fromUserBirthday() {
+      return new Moment(this.birthday).format("DD MMMM YYYY");
+    },
   },
   methods: {
     ...mapActions({ signup: "auth/signup" }),
@@ -137,8 +153,7 @@ export default {
       user.name = this.name
       user.surname = this.surname
       user.title = this.title
-      user.birthday = new Moment(this.birthday, "DD MMMM YYYY").local().valueOf()
-      user.age = this.age
+      user.birthday = this.birthday
       user.email = this.email
       user.password = this.password
       console.log("signupClicked user: ", user.birthday)
@@ -148,8 +163,7 @@ export default {
           this.$router.push({ name: "home" });
         })
         .catch(error => {
-          // console.log(error)
-          this.error = error
+          console.log(error)
           this.errorMessage = "Cannot signup user. please try again.";
         });
     },
