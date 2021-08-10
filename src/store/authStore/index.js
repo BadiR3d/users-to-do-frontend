@@ -22,11 +22,19 @@ export default {
     },
     SET_USER(state, user) {
       console.log('SET_USER: ', user)
-      const password = state.user.password
+      const name = state.user.name
+      const surname = state.user.surname
+      const email = state.user.email
+      const birthday = state.user.birthday
+      const token = state.user.token
+
       state.user = user;
-      if (!user.password) {
-        state.user.password = password
-      }
+      state.user.isLoggedIn = true
+      !user.name ? state.user.name = name : user.name
+      !user.surname ? state.user.surname = surname : user.surname
+      !user.email ? state.user.email = email : user.email
+      !user.birthday ? state.user.birthday = birthday : user.birthday
+      !user.token ? state.user.token = token : user.token
     },
     SET_ALL_USERS(state, users) {
       console.log('SET_ALL_USERS: ', users)
@@ -163,13 +171,17 @@ export default {
           },
         })
         .then(function ({data}) {
-          context.commit("SET_USER", { user: data.user });
+          console.log('updateUser data: ', data)
+          context.commit("SET_USER", data);
           resolve(data);
         })
         .catch(function (error) {
           reject(error);
         });
       });
+    },
+    async setUser(context, user) {
+      context.commit("SET_USER", user);
     },
     async setTask(context, task) {
       context.commit("SET_USER_TASK", task);

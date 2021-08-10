@@ -168,6 +168,7 @@ export default {
   methods: {
     ...mapActions({ deleteUser: "auth/deleteUser"}),
     ...mapActions({ updateUser: "auth/updateUser"}),
+    ...mapActions({ setUser: "auth/setUser"}),
     deleteClicked() {
       this.deleteUser().then(() => {
         this.$router.push({ name: "login"})
@@ -184,13 +185,14 @@ export default {
       user.title = this.title ? this.title : this.currUser.title
       user.birthday = this.birthday ? this.birthday : this.currUser.birthday
       user.email = this.email ? this.email : this.currUser.email
+      
       if (this.newPassword) user.password = this.newPassword
       console.log('updateClicked: ',user)
       this.updateUser(user)
         .then((response) => {
           console.log('updateUser res: ', response)
           this.successMessage = "update successful"
-          // this.$router.push({ name: "home" });
+          this.$router.push({ name: "home" });
         })
         .catch(error => {
           console.log(error)
